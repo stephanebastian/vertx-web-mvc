@@ -1,0 +1,73 @@
+h1. THIS FILE IS OUT OF DATE AND WILL BE UPDATED SOON
+
+
+h1. Features:
+
+* Http parameters are automatically bound to controller methods
+* Request parameter names do *not* need to match the name of parameters in a controller
+* Support default values
+* Automatically generates code to build reverse urls (ie: usersUrl.show(id))
+* Automatically generates code that register handlers with a router 
+
+h1. Defining routes
+
+All routes are centralized in a file whose suffix is .routes. 
+
+Here is an example:
+
+// note that the parameter id is mandatory
+GET 	/users/edit/:id			controllers.Users.edit(id)
+POST 	/users/update/:id		controllers.Users.update(id)
+// the parameter pageIndex is optional and set to 0 if not specified
+GET 	/users					controllers.Users.list(pageIndex=0)
+
+For each parameter, it's possible to define default values:
+* myparameter =null  : if not specified the value of the parameter is set to null
+* myparameter =new   : if not specified the value of the parameter is set to a new instance of the target type
+* myparameter ="123" : if not specified the value of the parameter is set to "123". 
+
+h1. Binders
+
+Binders are used to convert incoming request parameters to parameters of controllers, as well as building urls (reverse routes)
+The following conventions are used to determine which binder to use for a parameter:
+
+GET 	/users/edit/:id			controllers.Users.edit(id)
+The binder
+
+controllers.UsersEdit
+
+
+h1. Automatic generation of reverse urls
+
+h2. examples where there is one controller with several actions
+
+Routes:
+GET 	/users/edit/:id			controllers.Users.edit(id)
+POST 	/users/update/:id		controllers.Users.update(id)
+GET 	/users					controllers.Users.list(pageIndex=0)
+
+Result:
+controllers.UsersUrl.edit(String id).build();
+controllers.UsersUrl.update(String id).build();	
+controllers.UsersUrl.list().pageIndex(2).keyword("stephane").from(Instant.now()).build();
+					*OR*
+controllers.urls.Users.edit(String id).build();
+controllers.urls.Users.update(String id).build();	
+controllers.urls.Users.list().pageIndex(2).keyword("stephane").from(Instant.now()).build();
+
+h2. examples where there is one controller per action
+
+Routes:
+GET 	/users/edit/:id			controllers.users.EditUser.handle(id)
+POST 	/users/update/:id		controllers.Users.UpdateUser.handle(id)
+GET 	/users					controllers.Users.ListUser.handle(pageIndex=0)
+
+Result:
+controllers.users.EditUserUrl.handle(String id).build();
+controllers.users.UpdateUserUrl.handle(String id).build();	
+controllers.users.ListUserUrl.handle().pageIndex(2).keyword("stephane").from(Instant.now()).build();
+					*OR*
+controllers.urls.EditUser.handle(String id).build();
+controllers.urls.UpdateUser.handle(String id).build();	
+controllers.urls.ListUser.handle().pageIndex(2).keyword("stephane").from(Instant.now()).build();
+
