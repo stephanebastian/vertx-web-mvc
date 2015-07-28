@@ -348,14 +348,14 @@ public class MvcServiceImpl implements MvcService {
 						context.put(LAYOUT_CONTENT_PARAMETER_NAME, viewContent);
 						doForward(layouters, context);
 						if (!context.response().ended()) {
-							// convert Result.View into Result.Content
+							// convert ActionResult into Result.Content
 							handleContent(ActionResult.content(viewContent), context);
 						}
 					}
 					else {
 						// get the content as a string
 						String viewContent = event.result().toString();
-						// convert Result.View into Result.Content
+						// convert ActionResult into Result.Content
 						handleContent(ActionResult.content(viewContent), context);
 					}
 				}
