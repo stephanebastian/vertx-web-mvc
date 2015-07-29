@@ -205,6 +205,7 @@ package com.thesoftwarefactory.vertx.web.mvc.impl;
 
 import java.util.Objects;
 
+import com.thesoftwarefactory.vertx.web.mvc.Flash;
 import com.thesoftwarefactory.vertx.web.mvc.ViewResult;
 
 /**
@@ -212,12 +213,13 @@ import com.thesoftwarefactory.vertx.web.mvc.ViewResult;
  * @author <a href="mailto:stephane.bastian.dev@gmail.com">Stephane Bastian</a>
  *
  */
-public class ViewResultImpl implements ViewResult {
+public class ViewResultImpl extends ActionResultImpl implements ViewResult {
 	private boolean layoutEnabled = true;
 	private String layouter = null;
 	private Object model = null;
 	private String viewName = null;
-
+	private Flash flash;
+	
 	public ViewResultImpl(Object model, String viewName) {
 		Objects.requireNonNull(model);
 		Objects.requireNonNull(viewName);
@@ -238,6 +240,14 @@ public class ViewResultImpl implements ViewResult {
 		return this;
 	}
 
+	@Override
+	public Flash flash() {
+		if (flash==null) {
+			flash = new FlashImpl();
+		}
+		return flash;
+	}
+
 	/* (non-Javadoc)
 	 * @see vertx.mvc.impl.ViewResult#isLayoutDisabled()
 	 */
@@ -253,13 +263,13 @@ public class ViewResultImpl implements ViewResult {
 	public String layouter() {
 		return layouter;
 	}
-
+	
 	@Override
 	public ViewResult layouter(String actionName) {
 		this.layouter = actionName;
 		return null;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see vertx.mvc.impl.ViewResult#model()
 	 */

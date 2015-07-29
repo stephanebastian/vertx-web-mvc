@@ -204,13 +204,19 @@
 package com.thesoftwarefactory.vertx.web.mvc;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 
 import com.thesoftwarefactory.vertx.web.mvc.impl.ContentResultImpl;
 import com.thesoftwarefactory.vertx.web.mvc.impl.FileResultImpl;
 import com.thesoftwarefactory.vertx.web.mvc.impl.ForwardResultImpl;
+import com.thesoftwarefactory.vertx.web.mvc.impl.HttpStatusCodeResultImpl;
 import com.thesoftwarefactory.vertx.web.mvc.impl.RedirectResultImpl;
 import com.thesoftwarefactory.vertx.web.mvc.impl.ViewResultImpl;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.http.HttpServerResponse;
 
 /**
  * 
@@ -219,8 +225,12 @@ import com.thesoftwarefactory.vertx.web.mvc.impl.ViewResultImpl;
  */
 public interface ActionResult {
 
-	public static ViewResult view(Object model, String viewName) {
-		return new ViewResultImpl(model, viewName);
+	public static HttpStatusCodeResult badRequest() {
+		return new HttpStatusCodeResultImpl(HttpResponseStatus.BAD_REQUEST);
+	}
+
+	public static HttpStatusCodeResult conflict() {
+		return new HttpStatusCodeResultImpl(HttpResponseStatus.CONFLICT);
 	}
 
 	public static ContentResult content(byte[] content) {
@@ -243,9 +253,37 @@ public interface ActionResult {
 		return new ForwardResultImpl(actionName);
 	}
 
+	public static HttpStatusCodeResult internalServerError() {
+		return new HttpStatusCodeResultImpl(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	public static HttpStatusCodeResult internalServerError(Throwable throwable) {
+		StringWriter stringWriter = new StringWriter();
+		throwable.printStackTrace(new PrintWriter(stringWriter));
+		return new HttpStatusCodeResultImpl(HttpResponseStatus.INTERNAL_SERVER_ERROR.code(), stringWriter.toString());
+	}
+
+	public static HttpStatusCodeResult noContent() {
+		return new HttpStatusCodeResultImpl(HttpResponseStatus.NO_CONTENT);
+	}
+	
+	public static HttpStatusCodeResult notFound() {
+		return new HttpStatusCodeResultImpl(HttpResponseStatus.NOT_FOUND);
+	}
+
+	public static HttpStatusCodeResult notImplemented() {
+		return new HttpStatusCodeResultImpl(HttpResponseStatus.NOT_IMPLEMENTED);
+	}
+
 	public static RedirectResult redirect(String redirectTo) {
 		return new RedirectResultImpl(redirectTo);
 	}
+
+	public static ViewResult view(Object model, String viewName) {
+		return new ViewResultImpl(model, viewName);
+	}
 	
+	public int statusCode();
+
 }
 

@@ -212,7 +212,7 @@ import com.thesoftwarefactory.vertx.web.mvc.ForwardResult;
  * @author <a href="mailto:stephane.bastian.dev@gmail.com">Stephane Bastian</a>
  *
  */
-public class ForwardResultImpl implements ForwardResult {
+public class ForwardResultImpl extends ActionResultImpl implements ForwardResult {
 	private String actionName;
 	
 	public ForwardResultImpl(String actionName) {

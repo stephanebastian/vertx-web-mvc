@@ -214,10 +214,10 @@ import com.thesoftwarefactory.vertx.web.mvc.ContentResult;
  * @author <a href="mailto:stephane.bastian.dev@gmail.com">Stephane Bastian</a>
  *
  */
-public class ContentResultImpl implements ContentResult {
+public class ContentResultImpl extends ActionResultImpl implements ContentResult {
 	private byte[] content;
     private String contentType; // no default, that's up to the user of this class
-
+    
     public ContentResultImpl(byte[] content) {
 		Objects.requireNonNull(content);
 
@@ -259,5 +259,5 @@ public class ContentResultImpl implements ContentResult {
         this.contentType = contentType;
         return this;
     }
-	
+
 }

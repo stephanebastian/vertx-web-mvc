@@ -212,7 +212,7 @@ import com.thesoftwarefactory.vertx.web.mvc.FileResult;
  * @author <a href="mailto:stephane.bastian.dev@gmail.com">Stephane Bastian</a>
  *
  */
-public class FileResultImpl implements FileResult {
+public class FileResultImpl extends ActionResultImpl implements FileResult {
 	private String contentType;
 	private java.io.File file;
 
