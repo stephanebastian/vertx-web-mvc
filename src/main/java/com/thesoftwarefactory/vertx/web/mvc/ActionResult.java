@@ -216,7 +216,6 @@ import com.thesoftwarefactory.vertx.web.mvc.impl.RedirectResultImpl;
 import com.thesoftwarefactory.vertx.web.mvc.impl.ViewResultImpl;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.http.HttpServerResponse;
 
 /**
  * 
