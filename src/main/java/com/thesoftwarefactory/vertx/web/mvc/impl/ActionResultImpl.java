@@ -1,7 +1,5 @@
 package com.thesoftwarefactory.vertx.web.mvc.impl;
 
-import java.util.Objects;
-
 import com.thesoftwarefactory.vertx.web.mvc.ActionResult;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
