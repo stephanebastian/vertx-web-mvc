@@ -205,7 +205,6 @@ package com.thesoftwarefactory.vertx.web.mvc.impl;
 
 import java.util.Objects;
 
-import com.thesoftwarefactory.vertx.web.mvc.Flash;
 import com.thesoftwarefactory.vertx.web.mvc.ViewResult;
 
 /**
@@ -218,7 +217,6 @@ public class ViewResultImpl extends ActionResultImpl implements ViewResult {
 	private String layouter = null;
 	private Object model = null;
 	private String viewName = null;
-	private Flash flash;
 	
 	public ViewResultImpl(Object model, String viewName) {
 		Objects.requireNonNull(model);
@@ -238,14 +236,6 @@ public class ViewResultImpl extends ActionResultImpl implements ViewResult {
 	public ViewResult enableLayout() {
 		this.layoutEnabled = true;
 		return this;
-	}
-
-	@Override
-	public Flash flash() {
-		if (flash==null) {
-			flash = new FlashImpl();
-		}
-		return flash;
 	}
 
 	/* (non-Javadoc)

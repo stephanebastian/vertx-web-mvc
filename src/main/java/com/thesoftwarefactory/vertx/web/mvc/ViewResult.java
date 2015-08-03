@@ -203,8 +203,6 @@
  */
 package com.thesoftwarefactory.vertx.web.mvc;
 
-import com.thesoftwarefactory.vertx.web.mvc.impl.FlashImpl;
-
 /**
  * 
  * @author <a href="mailto:stephane.bastian.dev@gmail.com">Stephane Bastian</a>
@@ -231,7 +229,5 @@ public interface ViewResult extends ActionResult {
 	public abstract Object model();
 
 	public abstract String viewName();
-
-	public Flash flash();
 
 }

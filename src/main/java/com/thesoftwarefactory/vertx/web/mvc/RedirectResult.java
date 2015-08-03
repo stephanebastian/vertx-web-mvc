@@ -212,6 +212,4 @@ public interface RedirectResult extends ActionResult {
 
 	public abstract String redirectTo();
 
-	public Flash flash();
-	
 }

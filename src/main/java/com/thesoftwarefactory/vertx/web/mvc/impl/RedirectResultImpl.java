@@ -205,7 +205,6 @@ package com.thesoftwarefactory.vertx.web.mvc.impl;
 
 import java.util.Objects;
 
-import com.thesoftwarefactory.vertx.web.mvc.Flash;
 import com.thesoftwarefactory.vertx.web.mvc.RedirectResult;
 
 /**
@@ -215,20 +214,11 @@ import com.thesoftwarefactory.vertx.web.mvc.RedirectResult;
  */
 public class RedirectResultImpl extends ActionResultImpl implements RedirectResult {
 	private String redirectTo = null;
-	private Flash flash;
 	
 	public RedirectResultImpl(String redirectTo) {
 		Objects.requireNonNull(redirectTo);
 		
 		this.redirectTo = redirectTo;
-	}
-
-	@Override
-	public Flash flash() {
-		if (flash==null) {
-			flash = new FlashImpl();
-		}
-		return flash;
 	}
 
 	/* (non-Javadoc)
