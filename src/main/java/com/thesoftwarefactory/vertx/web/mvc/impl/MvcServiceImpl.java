@@ -206,6 +206,7 @@ package com.thesoftwarefactory.vertx.web.mvc.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import com.thesoftwarefactory.vertx.web.mvc.ActionResult;
 import com.thesoftwarefactory.vertx.web.mvc.ContentResult;
@@ -217,6 +218,7 @@ import com.thesoftwarefactory.vertx.web.mvc.ViewResult;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
@@ -374,6 +376,26 @@ public class MvcServiceImpl implements MvcService {
 		else {
 			handle(result.result(), context);
 		}
+	}
+
+	@Override
+	public void handle(Future<ActionResult> result, RoutingContext context) {
+		result.setHandler(actionResult -> {
+			handle(actionResult, context);
+		});	
+	}
+
+	@Override
+	public void handle(CompletableFuture<ActionResult> result, RoutingContext context) {
+		result.handle((ok, ex) -> {
+			if (ok!=null) {
+				handle(ok, context);
+			}
+			else {
+				throw new RuntimeException(ex.getCause());
+			}
+			return null;
+		});	
 	}
 
 }

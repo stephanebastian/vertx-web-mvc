@@ -203,9 +203,12 @@
  */
 package com.thesoftwarefactory.vertx.web.mvc;
 
+import java.util.concurrent.CompletableFuture;
+
 import com.thesoftwarefactory.vertx.web.mvc.impl.MvcServiceImpl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.TemplateEngine;
@@ -228,7 +231,11 @@ public interface MvcService {
 	public void handle(ActionResult result, RoutingContext context);
 
 	public void handle(AsyncResult<ActionResult> result, RoutingContext context);
-	
+
+	public void handle(Future<ActionResult> result, RoutingContext context);
+
+	public void handle(CompletableFuture<ActionResult> result, RoutingContext context);
+
 	public void initLayouts(Router router);
 
 }
