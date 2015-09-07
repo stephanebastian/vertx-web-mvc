@@ -215,5 +215,21 @@ public interface ContentResult extends ActionResult {
 	public abstract String contentType();
 
 	public abstract ContentResult contentType(String contentType);
-	
+
+	public abstract ContentResult disableLayout();
+
+	public abstract ContentResult enableLayout();
+
+	public abstract boolean isLayoutEnabled();
+
+	public abstract String layoutPath();
+
+	/**
+	 * the path of the layout we are decorated-with
+	 * 
+	 * @param actionName
+	 * @return
+	 */
+	public abstract ContentResult layoutPath(String path);
+
 }

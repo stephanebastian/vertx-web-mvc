@@ -210,21 +210,21 @@ package com.thesoftwarefactory.vertx.web.mvc;
  */
 public interface ViewResult extends ActionResult {
 
-	public abstract boolean isLayoutEnabled();
-
 	public abstract ViewResult disableLayout();
 
 	public abstract ViewResult enableLayout();
 
-	public abstract String layouter();
+	public abstract boolean isLayoutEnabled();
+
+	public abstract String layoutPath();
 
 	/**
-	 * the fully qualified name of the action in charge of the layout
+	 * the path of the layout we are decorated-with
 	 * 
 	 * @param actionName
 	 * @return
 	 */
-	public abstract ViewResult layouter(String actionName);
+	public abstract ViewResult layoutPath(String path);
 
 	public abstract Object model();
 

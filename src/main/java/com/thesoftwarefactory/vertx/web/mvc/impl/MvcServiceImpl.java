@@ -205,13 +205,16 @@ package com.thesoftwarefactory.vertx.web.mvc.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import com.thesoftwarefactory.vertx.web.mvc.ActionResult;
 import com.thesoftwarefactory.vertx.web.mvc.ContentResult;
 import com.thesoftwarefactory.vertx.web.mvc.FileResult;
 import com.thesoftwarefactory.vertx.web.mvc.ForwardResult;
+import com.thesoftwarefactory.vertx.web.mvc.Layout;
 import com.thesoftwarefactory.vertx.web.mvc.MvcService;
 import com.thesoftwarefactory.vertx.web.mvc.RedirectResult;
 import com.thesoftwarefactory.vertx.web.mvc.ViewResult;
@@ -222,11 +225,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.impl.RouteImpl;
-import io.vertx.ext.web.impl.RoutingContextWrapper;
 import io.vertx.ext.web.templ.TemplateEngine;
 
 /**
@@ -235,38 +235,19 @@ import io.vertx.ext.web.templ.TemplateEngine;
  *
  */
 public class MvcServiceImpl implements MvcService {
-	private final static String LAYOUT = "/_layout";
 	protected final static String LAYOUT_CONTENT_PARAMETER_NAME = "layoutContent";
+	protected final static String LAYOUT_STACK = "__layout-stack__";
 	
 	private TemplateEngine templateEngine;
-	private Collection<RouteImpl> layouters;
+	private Set<Layout> layouts;
 	
 	public MvcServiceImpl(TemplateEngine templateEngine) {
 		Objects.requireNonNull(templateEngine);
 		
 		this.templateEngine = templateEngine;
-		this.layouters = new ArrayList<>();
-	}
-
-	private boolean isLayout(Route route) {
-		return route.getPath()!=null && route.getPath().startsWith(LAYOUT);
+		this.layouts = new HashSet<>();
 	}
 	
-	public void initLayouts(Router router) {
-		for (Route route: router.getRoutes()) {
-			if (route instanceof RouteImpl) {
-				RouteImpl routeImpl = (RouteImpl) route;
-				if (isLayout(routeImpl)) {
-					// layout routes are removed from the router so they can't be used from outside
-					routeImpl.remove();
-					String newPath = route.getPath().substring(LAYOUT.length()) + "*";
-					routeImpl.path(newPath);
-					layouters.add(routeImpl);
-				}
-			}
-		}
-	}
-
 	@Override
 	public void handle(ActionResult result, RoutingContext context) {
 		Objects.requireNonNull(result);
@@ -316,23 +297,86 @@ public class MvcServiceImpl implements MvcService {
 		context.response().end();
 	}
 
-	protected void doForward(Collection<RouteImpl> routes, RoutingContext context) {
-		if (routes.size()>0) {
-			new RoutingContextWrapper("/", context.request(), routes.iterator(), context){
-				@Override
-				public void next() {
-					super.iterateNext();
-				}
-				
-			}.next();
-		}
-	}
-
 	protected void handleRedirect(RedirectResult result, RoutingContext context) {
 		context.response()
 				.setStatusCode(HttpResponseStatus.SEE_OTHER.code())
         	    .putHeader("Location", result.redirectTo())
                	.end();
+	}
+
+	/**
+	 * returns all layouts that have been processed
+	 * 
+	 * @param context
+	 * @return
+	 */
+	protected Collection<String> layouts(RoutingContext context) {
+		Collection<String> result = context.get(LAYOUT_STACK);
+		if (result==null) {
+			result = new ArrayList<>();
+			context.put(LAYOUT_STACK, result);
+		}
+		return result;
+	}
+	
+	protected boolean shouldLayout(RoutingContext context, boolean isLayoutEnabled) {
+		return isLayoutEnabled && !layouts(context).contains(context.request().path());
+	}
+	
+	protected void handleLayoutAwareContent(String content, boolean isLayoutEnabled, String layoutPath, RoutingContext context) {
+		if (shouldLayout(context, isLayoutEnabled)) {
+			if (layoutPath==null) {
+				layoutPath = context.request().path();
+			}
+			Layout layout = null;
+			for (Layout aLayout: layouts) {
+				if (layoutPath.startsWith(aLayout.path())) {
+					layout = aLayout;
+					
+					break;
+				}
+			}
+			if (layout==null) {
+				context.put(LAYOUT_CONTENT_PARAMETER_NAME, null);
+				context.put(LAYOUT_STACK, null);
+				// convert ActionResult into Result.Content
+				handleContent(ActionResult.content(content), context);
+			}
+			else {
+				String path = layout.path();
+				String uri = layout.path();
+				layouts(context).add(path);
+				context = new RoutingContextWrapper(context) {
+					private HttpServerRequest request;
+					
+					@Override
+					public HttpServerRequest request() {
+						if (request==null) {
+							request = new HttpServerRequestWrapper(super.request()) {
+								@Override
+								public String path() {
+									return path;
+								}
+
+								@Override
+								public String uri() {
+									return uri;
+								}
+							};
+						}
+						return request;
+					}
+					
+				};
+				// set the layout content so it can be bound in the controller later-on
+				context.put(LAYOUT_CONTENT_PARAMETER_NAME, content);
+				layout.handler().handle(context);
+			}
+		}
+		else {
+			// convert ActionResult into Result.Content
+			handleContent(ActionResult.content(content), context);
+		}
 	}
 	
 	protected void handleView(ViewResult viewResult, RoutingContext context) {
@@ -344,21 +388,8 @@ public class MvcServiceImpl implements MvcService {
 					if (event.failed()) {
 						throw new RuntimeException(event.cause());
 					}
-					else if (viewResult.isLayoutEnabled()) {
-						// get the content as a string
-						String viewContent = event.result().toString();
-						context.put(LAYOUT_CONTENT_PARAMETER_NAME, viewContent);
-						doForward(layouters, context);
-						if (!context.response().ended()) {
-							// convert ActionResult into Result.Content
-							handleContent(ActionResult.content(viewContent), context);
-						}
-					}
 					else {
-						// get the content as a string
-						String viewContent = event.result().toString();
-						// convert ActionResult into Result.Content
-						handleContent(ActionResult.content(viewContent), context);
+						handleLayoutAwareContent(event.result().toString(), viewResult.isLayoutEnabled(), viewResult.layoutPath(), context);
 					}
 				}
 			}
@@ -396,6 +427,11 @@ public class MvcServiceImpl implements MvcService {
 			}
 			return null;
 		});	
+	}
+
+	@Override
+	public Set<Layout> layouts() {
+		return layouts;
 	}
 
 }

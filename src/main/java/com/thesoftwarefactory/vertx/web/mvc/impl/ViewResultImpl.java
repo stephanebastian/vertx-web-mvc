@@ -214,7 +214,7 @@ import com.thesoftwarefactory.vertx.web.mvc.ViewResult;
  */
 public class ViewResultImpl extends ActionResultImpl implements ViewResult {
 	private boolean layoutEnabled = true;
-	private String layouter = null;
+	private String layoutPath = null;
 	private Object model = null;
 	private String viewName = null;
 	
@@ -250,14 +250,14 @@ public class ViewResultImpl extends ActionResultImpl implements ViewResult {
 	 * @see vertx.mvc.impl.ViewResult#layoutClass()
 	 */
 	@Override
-	public String layouter() {
-		return layouter;
+	public String layoutPath() {
+		return layoutPath;
 	}
 	
 	@Override
-	public ViewResult layouter(String actionName) {
-		this.layouter = actionName;
-		return null;
+	public ViewResult layoutPath(String layoutPath) {
+		this.layoutPath = layoutPath;
+		return this;
 	}
 
 	/* (non-Javadoc)

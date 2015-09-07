@@ -216,15 +216,17 @@ import com.thesoftwarefactory.vertx.web.mvc.ContentResult;
  */
 public class ContentResultImpl extends ActionResultImpl implements ContentResult {
 	private byte[] content;
-    private String contentType; // no default, that's up to the user of this class
+	private String contentType; // no default, that's up to the user of this class
+	private boolean layoutEnabled = true;
+    private String layoutPath = null;
     
     public ContentResultImpl(byte[] content) {
 		Objects.requireNonNull(content);
 
 		this.content = content;
     }
-
-    public ContentResultImpl(String content) {
+    
+	public ContentResultImpl(String content) {
 		this(content, StandardCharsets.UTF_8);
 	}
 
@@ -243,14 +245,14 @@ public class ContentResultImpl extends ActionResultImpl implements ContentResult
 		return content;
 	}
 
-    /* (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see vertx.mvc.impl.ContentResult#contentType()
 	 */
     @Override
 	public String contentType() {
         return contentType;
     }
-
+	
 	/* (non-Javadoc)
 	 * @see vertx.mvc.impl.ContentResult#contentType(java.lang.String)
 	 */
@@ -259,5 +261,39 @@ public class ContentResultImpl extends ActionResultImpl implements ContentResult
         this.contentType = contentType;
         return this;
     }
+
+    @Override
+	public ContentResult disableLayout() {
+		this.layoutEnabled = false;
+		return this;
+	}
+
+	@Override
+	public ContentResult enableLayout() {
+		this.layoutEnabled = true;
+		return this;
+	}
+
+	/* (non-Javadoc)
+	 * @see vertx.mvc.impl.ViewResult#isLayoutDisabled()
+	 */
+	@Override
+	public boolean isLayoutEnabled() {
+		return layoutEnabled;
+	}
+
+    /* (non-Javadoc)
+	 * @see vertx.mvc.impl.ViewResult#layoutClass()
+	 */
+	@Override
+	public String layoutPath() {
+		return layoutPath;
+	}
+
+	@Override
+	public ContentResult layoutPath(String layoutPath) {
+		this.layoutPath = layoutPath;
+		return this;
+	}
 
 }
