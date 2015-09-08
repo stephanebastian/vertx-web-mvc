@@ -397,15 +397,17 @@ public class MvcServiceImpl implements MvcService {
 	}
 
 	@Override
-	public void handle(AsyncResult<ActionResult> result, RoutingContext context) {
-		Objects.requireNonNull(result);
+	public void handle(AsyncResult<ActionResult> asyncResult, RoutingContext context) {
+		Objects.requireNonNull(asyncResult);
 		Objects.requireNonNull(context);
 		
-		if (result.failed()) {
-			throw new RuntimeException(result.cause());
+		if (asyncResult.failed()) {
+			throw new RuntimeException(asyncResult.cause());
 		}
 		else {
-			handle(result.result(), context);
+			context.vertx().runOnContext(ready -> {
+				handle(asyncResult.result(), context);
+			});
 		}
 	}
 
@@ -419,11 +421,13 @@ public class MvcServiceImpl implements MvcService {
 	@Override
 	public void handle(CompletableFuture<ActionResult> result, RoutingContext context) {
 		result.handle((ok, ex) -> {
-			if (ok!=null) {
-				handle(ok, context);
+			if (ex!=null) {
+				throw new RuntimeException(ex.getCause());
 			}
 			else {
-				throw new RuntimeException(ex.getCause());
+				context.vertx().runOnContext(ready -> {
+					handle(ok, context);
+				});
 			}
 			return null;
 		});	
