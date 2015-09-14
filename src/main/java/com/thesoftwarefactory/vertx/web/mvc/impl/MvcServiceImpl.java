@@ -225,7 +225,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.TemplateEngine;
 
@@ -310,8 +309,8 @@ public class MvcServiceImpl implements MvcService {
 	 * @param context
 	 * @return
 	 */
-	protected Collection<String> layouts(RoutingContext context) {
-		Collection<String> result = context.get(LAYOUT_STACK);
+	protected Collection<Layout> previousLayouts(RoutingContext context) {
+		Collection<Layout> result = context.get(LAYOUT_STACK);
 		if (result==null) {
 			result = new ArrayList<>();
 			context.put(LAYOUT_STACK, result);
@@ -320,62 +319,40 @@ public class MvcServiceImpl implements MvcService {
 	}
 	
 	protected boolean shouldLayout(RoutingContext context, boolean isLayoutEnabled) {
-		return isLayoutEnabled && !layouts(context).contains(context.request().path());
+		return isLayoutEnabled && !previousLayouts(context).contains(context.request().path());
 	}
 	
-	protected void handleLayoutAwareContent(String content, boolean isLayoutEnabled, String layoutPath, RoutingContext context) {
-		if (shouldLayout(context, isLayoutEnabled)) {
-			if (layoutPath==null) {
-				layoutPath = context.request().path();
-			}
-			Layout layout = null;
-			for (Layout aLayout: layouts) {
-				if (layoutPath.startsWith(aLayout.path())) {
-					layout = aLayout;
-					
-					break;
+	protected Layout getLayoutToApply(RoutingContext context, String layoutPath) {
+		Layout result = null;
+		if (layouts().size()>0) {
+			Collection<Layout> previousLayouts = previousLayouts(context);
+			if (layouts().size()>previousLayouts.size()) {
+				if (layoutPath==null) {
+					layoutPath = context.request().path();
+				}
+				for (Layout layout: layouts()) {
+					if (!previousLayouts.contains(layout) && layoutPath.startsWith(layout.path())) {
+						previousLayouts.add(layout);
+						return layout;
+					}
 				}
 			}
-			if (layout==null) {
-				context.put(LAYOUT_CONTENT_PARAMETER_NAME, null);
-				context.put(LAYOUT_STACK, null);
-				// convert ActionResult into Result.Content
-				handleContent(ActionResult.content(content), context);
-			}
-			else {
-				String path = layout.path();
-				String uri = layout.path();
-				layouts(context).add(path);
-				context = new RoutingContextWrapper(context) {
-					private HttpServerRequest request;
-					
-					@Override
-					public HttpServerRequest request() {
-						if (request==null) {
-							request = new HttpServerRequestWrapper(super.request()) {
-								@Override
-								public String path() {
-									return path;
-								}
-
-								@Override
-								public String uri() {
-									return uri;
-								}
-							};
-						}
-						return request;
-					}
-					
-				};
-				// set the layout content so it can be bound in the controller later-on
-				context.put(LAYOUT_CONTENT_PARAMETER_NAME, content);
-				layout.handler().handle(context);
-			}
 		}
-		else {
+		return result;
+	}
+	
+	protected void handleLayoutAwareContent(String content, String layoutPath, RoutingContext context) {
+		Layout layoutToApply = getLayoutToApply(context, layoutPath);
+		if (layoutToApply==null) {
+			context.put(LAYOUT_CONTENT_PARAMETER_NAME, null);
+			context.put(LAYOUT_STACK, null);
 			// convert ActionResult into Result.Content
 			handleContent(ActionResult.content(content), context);
+		}
+		else {
+			// set the layout content so it can be bound in the controller later-on
+			context.put(LAYOUT_CONTENT_PARAMETER_NAME, content);
+			layoutToApply.handler().handle(context);
 		}
 	}
 	
@@ -388,8 +365,12 @@ public class MvcServiceImpl implements MvcService {
 					if (event.failed()) {
 						throw new RuntimeException(event.cause());
 					}
+					else if (viewResult.isLayoutEnabled()) {
+						handleLayoutAwareContent(event.result().toString(), viewResult.layoutPath(), context);
+					}
 					else {
-						handleLayoutAwareContent(event.result().toString(), viewResult.isLayoutEnabled(), viewResult.layoutPath(), context);
+						// convert ActionResult into Result.Content
+						handleContent(ActionResult.content(event.result().toString()), context);
 					}
 				}
 			}
