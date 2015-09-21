@@ -363,7 +363,7 @@ public class MvcServiceImpl implements MvcService {
 				@Override
 				public void handle(AsyncResult<Buffer> event) {
 					if (event.failed()) {
-						throw new RuntimeException(event.cause());
+						context.fail(event.cause());
 					}
 					else if (viewResult.isLayoutEnabled()) {
 						handleLayoutAwareContent(event.result().toString(), viewResult.layoutPath(), context);
