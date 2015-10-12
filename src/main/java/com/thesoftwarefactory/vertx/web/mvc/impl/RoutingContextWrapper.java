@@ -1,19 +1,21 @@
 package com.thesoftwarefactory.vertx.web.mvc.impl;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.Locale;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
@@ -27,7 +29,11 @@ public class RoutingContextWrapper implements RoutingContext {
 		
 		this.decoratedContext = decoratedContext;
 	}
-	
+
+	public List<Locale> acceptableLocales() {
+		return decoratedContext.acceptableLocales();
+	}
+
 	public int addBodyEndHandler(Handler<Void> handler) {
 		return decoratedContext.addBodyEndHandler(handler);
 	}
@@ -36,10 +42,10 @@ public class RoutingContextWrapper implements RoutingContext {
 		return decoratedContext.addCookie(cookie);
 	}
 
-	public int addHeadersEndHandler(Handler<Future> handler) {
+	public int addHeadersEndHandler(Handler<Void> handler) {
 		return decoratedContext.addHeadersEndHandler(handler);
 	}
-
+	
 	public void clearUser() {
 		decoratedContext.clearUser();
 	}
@@ -120,6 +126,10 @@ public class RoutingContextWrapper implements RoutingContext {
 		return decoratedContext.normalisedPath();
 	}
 
+	public Locale preferredLocale() {
+		return decoratedContext.preferredLocale();
+	}
+
 	public RoutingContext put(String key, Object obj) {
 		return decoratedContext.put(key, obj);
 	}
@@ -138,6 +148,14 @@ public class RoutingContextWrapper implements RoutingContext {
 
 	public HttpServerRequest request() {
 		return decoratedContext.request();
+	}
+
+	public void reroute(HttpMethod arg0, String arg1) {
+		decoratedContext.reroute(arg0, arg1);
+	}
+
+	public void reroute(String path) {
+		decoratedContext.reroute(path);
 	}
 
 	public HttpServerResponse response() {

@@ -26,11 +26,11 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
 		
 		this.decoratedRequest = decoratedRequest;
 	}
-	
+
 	public String absoluteURI() {
 		return decoratedRequest.absoluteURI();
 	}
-
+	
 	public HttpServerRequest bodyHandler(Handler<Buffer> bodyHandler) {
 		return decoratedRequest.bodyHandler(bodyHandler);
 	}
@@ -51,8 +51,12 @@ public class HttpServerRequestWrapper implements HttpServerRequest {
 		return decoratedRequest.getFormAttribute(attributeName);
 	}
 
-	public String getHeader(String headerName) {
+	public String getHeader(CharSequence headerName) {
 		return decoratedRequest.getHeader(headerName);
+	}
+
+	public String getHeader(String arg0) {
+		return decoratedRequest.getHeader(arg0);
 	}
 
 	public String getParam(String paramName) {
