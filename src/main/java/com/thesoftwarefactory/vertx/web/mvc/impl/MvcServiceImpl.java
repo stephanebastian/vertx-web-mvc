@@ -214,6 +214,7 @@ import com.thesoftwarefactory.vertx.web.mvc.ActionResult;
 import com.thesoftwarefactory.vertx.web.mvc.ContentResult;
 import com.thesoftwarefactory.vertx.web.mvc.FileResult;
 import com.thesoftwarefactory.vertx.web.mvc.ForwardResult;
+import com.thesoftwarefactory.vertx.web.mvc.HttpStatusCodeResult;
 import com.thesoftwarefactory.vertx.web.mvc.Layout;
 import com.thesoftwarefactory.vertx.web.mvc.MvcService;
 import com.thesoftwarefactory.vertx.web.mvc.RedirectResult;
@@ -266,7 +267,15 @@ public class MvcServiceImpl implements MvcService {
 		}
 		else if (result instanceof ViewResult) {
 			handleView((ViewResult) result, context);
+		} 
+		else if (result instanceof HttpStatusCodeResult) {
+			handleStatusCode((HttpStatusCodeResult)result, context);
 		}
+	}
+
+	private void handleStatusCode(HttpStatusCodeResult result, RoutingContext context) {
+		context.response().setStatusCode(result.statusCode());
+		context.response().end();
 	}
 
 	protected void handleContent(ContentResult result, RoutingContext context) {
