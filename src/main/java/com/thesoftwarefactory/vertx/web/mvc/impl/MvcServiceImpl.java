@@ -237,6 +237,7 @@ import io.vertx.ext.web.templ.TemplateEngine;
 public class MvcServiceImpl implements MvcService {
 	protected final static String LAYOUT_CONTENT_PARAMETER_NAME = "layoutContent";
 	protected final static String LAYOUT_STACK = "__layout-stack__";
+	private final static String AJAX =  "ajax"; 
 	
 	private TemplateEngine templateEngine;
 	private Set<Layout> layouts;
@@ -374,7 +375,7 @@ public class MvcServiceImpl implements MvcService {
 					if (event.failed()) {
 						context.fail(event.cause());
 					}
-					else if (viewResult.isLayoutEnabled()) {
+					else if (viewResult.isLayoutEnabled() && context.request().getParam(AJAX)==null) {
 						handleLayoutAwareContent(event.result().toString(), viewResult.layoutPath(), context);
 					}
 					else {
