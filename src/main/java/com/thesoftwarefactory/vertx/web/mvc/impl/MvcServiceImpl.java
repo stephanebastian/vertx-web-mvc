@@ -214,6 +214,7 @@ import com.thesoftwarefactory.vertx.web.mvc.ActionResult;
 import com.thesoftwarefactory.vertx.web.mvc.ContentResult;
 import com.thesoftwarefactory.vertx.web.mvc.FileResult;
 import com.thesoftwarefactory.vertx.web.mvc.ForwardResult;
+import com.thesoftwarefactory.vertx.web.mvc.HttpStatusCodeResult;
 import com.thesoftwarefactory.vertx.web.mvc.Layout;
 import com.thesoftwarefactory.vertx.web.mvc.MvcService;
 import com.thesoftwarefactory.vertx.web.mvc.RedirectResult;
@@ -236,6 +237,7 @@ import io.vertx.ext.web.templ.TemplateEngine;
 public class MvcServiceImpl implements MvcService {
 	protected final static String LAYOUT_CONTENT_PARAMETER_NAME = "layoutContent";
 	protected final static String LAYOUT_STACK = "__layout-stack__";
+	private final static String AJAX =  "ajax"; 
 	
 	private TemplateEngine templateEngine;
 	private Set<Layout> layouts;
@@ -266,7 +268,15 @@ public class MvcServiceImpl implements MvcService {
 		}
 		else if (result instanceof ViewResult) {
 			handleView((ViewResult) result, context);
+		} 
+		else if (result instanceof HttpStatusCodeResult) {
+			handleStatusCode((HttpStatusCodeResult)result, context);
 		}
+	}
+
+	private void handleStatusCode(HttpStatusCodeResult result, RoutingContext context) {
+		context.response().setStatusCode(result.statusCode());
+		context.response().end();
 	}
 
 	protected void handleContent(ContentResult result, RoutingContext context) {
@@ -365,7 +375,7 @@ public class MvcServiceImpl implements MvcService {
 					if (event.failed()) {
 						context.fail(event.cause());
 					}
-					else if (viewResult.isLayoutEnabled()) {
+					else if (viewResult.isLayoutEnabled() && context.request().getParam(AJAX)==null) {
 						handleLayoutAwareContent(event.result().toString(), viewResult.layoutPath(), context);
 					}
 					else {
