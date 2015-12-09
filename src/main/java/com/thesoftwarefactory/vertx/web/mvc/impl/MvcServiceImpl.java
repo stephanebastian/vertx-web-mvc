@@ -279,12 +279,11 @@ public class MvcServiceImpl implements MvcService {
 	}
 
 	protected void handleContent(ContentResult result, RoutingContext context) {
-        if (result.contentType()!=null) {
-            context.response().putHeader(HttpHeaders.CONTENT_TYPE, result.contentType());
-        } 
-        else {
-        // default to ?
+
+        for (String name : result.headerNames()) {
+        	context.response().putHeader(name, result.header(name));
         }
+        
         // status code
 		context.response().setStatusCode(HttpResponseStatus.OK.code());
 		// content
