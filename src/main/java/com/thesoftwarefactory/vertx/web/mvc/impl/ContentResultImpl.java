@@ -205,9 +205,18 @@ package com.thesoftwarefactory.vertx.web.mvc.impl;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
+import com.thesoftwarefactory.vertx.web.mvc.ActionResult;
 import com.thesoftwarefactory.vertx.web.mvc.ContentResult;
+
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpHeaders;
 
 /**
  * 
@@ -216,7 +225,7 @@ import com.thesoftwarefactory.vertx.web.mvc.ContentResult;
  */
 public class ContentResultImpl extends ActionResultImpl implements ContentResult {
 	private byte[] content;
-	private String contentType; // no default, that's up to the user of this class
+	private MultiMap headers;
 	private boolean layoutEnabled = true;
     private String layoutPath = null;
     
@@ -244,21 +253,10 @@ public class ContentResultImpl extends ActionResultImpl implements ContentResult
 	public byte[] content() {
 		return content;
 	}
-
-	/* (non-Javadoc)
-	 * @see vertx.mvc.impl.ContentResult#contentType()
-	 */
-    @Override
-	public String contentType() {
-        return contentType;
-    }
 	
-	/* (non-Javadoc)
-	 * @see vertx.mvc.impl.ContentResult#contentType(java.lang.String)
-	 */
 	@Override
 	public ContentResult contentType(String contentType) {
-        this.contentType = contentType;
+		header("Content-type", contentType);
         return this;
     }
 
@@ -294,6 +292,27 @@ public class ContentResultImpl extends ActionResultImpl implements ContentResult
 	public ContentResult layoutPath(String layoutPath) {
 		this.layoutPath = layoutPath;
 		return this;
+	}
+
+	@Override
+	public ContentResult header(String name, String value) {
+		if (headers == null) {
+			headers = MultiMap.caseInsensitiveMultiMap();
+		}
+		
+		headers.add(name, value);
+		
+		return this;
+	}
+
+	@Override
+	public Collection<String> headerNames() {
+		return headers != null ? headers.names() : Collections.emptyList();
+	}
+
+	@Override
+	public Collection<String> header(String name) {
+		return headers != null ? headers.getAll(name) : Collections.emptyList();
 	}
 
 }

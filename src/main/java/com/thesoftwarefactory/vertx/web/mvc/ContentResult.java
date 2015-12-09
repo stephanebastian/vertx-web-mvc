@@ -203,6 +203,8 @@
  */
 package com.thesoftwarefactory.vertx.web.mvc;
 
+import java.util.Collection;
+
 /**
  * 
  * @author <a href="mailto:stephane.bastian.dev@gmail.com">Stephane Bastian</a>
@@ -212,13 +214,17 @@ public interface ContentResult extends ActionResult {
 
 	public abstract byte[] content();
 
-	public abstract String contentType();
-
 	public abstract ContentResult contentType(String contentType);
 
 	public abstract ContentResult disableLayout();
 
 	public abstract ContentResult enableLayout();
+	
+	public abstract ContentResult header(String name, String value);
+	
+	public abstract Collection<String> headerNames();
+	
+	public abstract Collection<String> header(String name);
 
 	public abstract boolean isLayoutEnabled();
 
